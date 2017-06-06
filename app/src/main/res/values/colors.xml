@@ -4,4 +4,14 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+
+    <color name="colorPageBg">#f2f4f5</color>
+
+    <color name="white">#ffffffff</color>
+
+    <color name="colorText">#2c2c2c</color>
+
+    <color name="colorLineItem">#FFDDDDDD</color>
+
+    <color name="colorItemPressed">#dd7d7d7d</color>
 </resources>

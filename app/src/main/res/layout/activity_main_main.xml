@@ -19,7 +19,6 @@
                 android:paddingLeft="15dp"
                 android:paddingRight="15dp">
                 <ImageView
-                    android:id="@+id/iv_title_menu"
                     android:layout_width="23dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
