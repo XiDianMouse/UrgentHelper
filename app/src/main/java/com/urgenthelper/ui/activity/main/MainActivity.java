@@ -17,6 +17,7 @@ import com.urgenthelper.R;
 import com.urgenthelper.adapter.MenuAdapter;
 import com.urgenthelper.app.MyApp;
 import com.urgenthelper.listeners.OnItemClickListener;
+import com.urgenthelper.tcp.TcpController;
 import com.urgenthelper.ui.activity.base.BaseActivity;
 
 import java.util.ArrayList;
@@ -106,9 +107,23 @@ public class MainActivity extends BaseActivity implements OnItemClickListener<Me
                 break;
             case R.id.urgent_alarm:
                 ToastUtils.showShortToast("正在为你开启紧急救援");
-                mMyApp.mLocationClient.start();
+                alaremHelp();
                 break;
         }
+    }
+
+    private void alaremHelp(){
+        TcpController instance = TcpController.getInstance();
+        if(instance!=null && instance.mSocket!=null){
+//            try{
+//                instance.mSocket.sendUrgentData(0xFF);//发送心跳包
+//            }catch(Exception e){
+//                new Thread(instance).start();//重新建立套接字
+//            }
+        }else if(instance!=null){
+            new Thread(instance).start();//建立套接字
+        }
+        mMyApp.mLocationClient.start();
     }
 
     @Override

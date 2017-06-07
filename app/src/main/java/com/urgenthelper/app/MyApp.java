@@ -7,7 +7,7 @@ import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 import com.baidu.mapapi.SDKInitializer;
 import com.blankj.utilcode.utils.Utils;
-import com.urgenthelper.ui.activity.main.MyLocationListener;
+import com.urgenthelper.ui.activity.main.LocationResponse;
 
 
 /**
@@ -18,22 +18,30 @@ import com.urgenthelper.ui.activity.main.MyLocationListener;
 
 public class MyApp extends Application{
     public LocationClient mLocationClient = null;
-    public BDLocationListener myListener = new MyLocationListener(this);
+    public BDLocationListener myListener = new LocationResponse(this);
 
     @Override
     public void onCreate(){
         super.onCreate();
         Utils.init(this);
+        //百度地图
         SDKInitializer.initialize(getApplicationContext());
+        //百度定位
         mLocationClient = new LocationClient(getApplicationContext());//声明LocationClient类
         mLocationClient.registerLocationListener(myListener);    //注册监听函数
         initLocation();//初始化
     }
 
+    //综合定位功能指的是根据用户实际需求，返回用户当前位置的基础定位服务,包含GPS和网络定位(WiFi定位和基站
+    //定位)功能。基本定位功能同时还支持位置描述信息功能，离线定位功能，位置提醒功能和位置语义化功能。
     private void initLocation(){
         LocationClientOption option = new LocationClientOption();
-        option.setLocationMode(LocationClientOption.LocationMode.Hight_Accuracy
-        );//可选，默认高精度，设置定位模式，高精度，低功耗，仅设备
+        /*
+        * 高精度定位模式：这种定位模式下，会同时使用网络定位和GPS定位，优先返回最高精度的定位结果；
+        *低功耗定位模式：这种定位模式下，不会使用GPS进行定位，只会使用网络定位（WiFi定位和基站定位）；
+        *仅用设备定位模式：这种定位模式下，不需要连接网络，只使用GPS进行定位，这种模式下不支持室内环境的定位。
+        * */
+        option.setLocationMode(LocationClientOption.LocationMode.Hight_Accuracy);//可选，默认高精度，设置定位模式，高精度，低功耗，仅设备
         option.setCoorType("bd09ll");//可选，默认gcj02，设置返回的定位结果坐标系
         int span=1000;
         option.setScanSpan(span);//可选，默认0，即仅定位一次，设置发起定位请求的间隔需要大于等于1000ms才是有效的
