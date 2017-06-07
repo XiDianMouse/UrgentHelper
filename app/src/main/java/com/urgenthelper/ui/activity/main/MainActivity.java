@@ -15,6 +15,7 @@ import com.blankj.utilcode.utils.ToastUtils;
 import com.urgenthelper.ItemEntry.MenuEntry;
 import com.urgenthelper.R;
 import com.urgenthelper.adapter.MenuAdapter;
+import com.urgenthelper.app.MyApp;
 import com.urgenthelper.listeners.OnItemClickListener;
 import com.urgenthelper.ui.activity.base.BaseActivity;
 
@@ -25,6 +26,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
+
 
 /**
  * @auther gbh
@@ -44,6 +46,7 @@ public class MainActivity extends BaseActivity implements OnItemClickListener<Me
     MapView mBmapView;
 
     private Unbinder bind;
+    private MyApp mMyApp;
 
     @Override
     public int getLayoutId() {
@@ -59,6 +62,7 @@ public class MainActivity extends BaseActivity implements OnItemClickListener<Me
         actionBar.setDisplayHomeAsUpEnabled(false);
         actionBar.setDisplayShowTitleEnabled(false);
         initMenuView();
+        mMyApp = (MyApp)getApplicationContext();
     }
 
     private void initMenuView() {
@@ -91,7 +95,7 @@ public class MainActivity extends BaseActivity implements OnItemClickListener<Me
         mBmapView.onPause();
     }
 
-    @OnClick({R.id.fl_title_menu, R.id.login})
+    @OnClick({R.id.fl_title_menu,R.id.login,R.id.urgent_alarm})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.fl_title_menu:
@@ -99,6 +103,10 @@ public class MainActivity extends BaseActivity implements OnItemClickListener<Me
                 break;
             case R.id.login:
                 ToastUtils.showShortToast("暂未开发");
+                break;
+            case R.id.urgent_alarm:
+                ToastUtils.showShortToast("正在为你开启紧急救援");
+                mMyApp.mLocationClient.start();
                 break;
         }
     }
@@ -116,9 +124,11 @@ public class MainActivity extends BaseActivity implements OnItemClickListener<Me
                 ToastUtils.showShortToast("尚未开发");
                 break;
             case R.drawable.feedback:
+                ToastUtils.showShortToast("尚未开发");
                 //startActivity(new Intent(this,FeedbackActivity.class));
                 break;
             case R.drawable.exit_app:
+                ToastUtils.showShortToast("尚未开发");
                 //killAll();
                 break;
         }

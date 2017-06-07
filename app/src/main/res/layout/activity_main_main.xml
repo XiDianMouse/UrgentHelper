@@ -36,5 +36,16 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clickable="true" />
+        <Button
+            android:id="@+id/urgent_alarm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="紧急报警"
+            android:textSize="24sp"
+            android:background="@drawable/selector_alarm_button"
+            android:textColor="@drawable/selector_alarm_textcolor"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="380dp">
+        </Button>
     </FrameLayout>
 </LinearLayout>
