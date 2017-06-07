@@ -10,6 +10,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 
+import com.baidu.mapapi.map.MapView;
 import com.blankj.utilcode.utils.ToastUtils;
 import com.urgenthelper.ItemEntry.MenuEntry;
 import com.urgenthelper.R;
@@ -31,7 +32,7 @@ import butterknife.Unbinder;
  * Created on 2017/6/6.
  */
 
-public class MainActivity extends BaseActivity implements OnItemClickListener<MenuEntry>{
+public class MainActivity extends BaseActivity implements OnItemClickListener<MenuEntry> {
 
     @BindView(R.id.main_toolbar)
     Toolbar mMainToolbar;
@@ -39,6 +40,8 @@ public class MainActivity extends BaseActivity implements OnItemClickListener<Me
     DrawerLayout mMainDrawlayout;
     @BindView(R.id.menu_recyclerview)
     RecyclerView mMenuRecyclerview;
+    @BindView(R.id.bmapView)
+    MapView mBmapView;
 
     private Unbinder bind;
 
@@ -58,8 +61,8 @@ public class MainActivity extends BaseActivity implements OnItemClickListener<Me
         initMenuView();
     }
 
-    private void initMenuView(){
-        mMenuRecyclerview.setLayoutManager(new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false));
+    private void initMenuView() {
+        mMenuRecyclerview.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         MenuAdapter menuAdapter = new MenuAdapter(this);
         menuAdapter.addItems(prepareMenuItems());
         menuAdapter.setItemClickListener(this);
@@ -68,12 +71,24 @@ public class MainActivity extends BaseActivity implements OnItemClickListener<Me
 
     private List<MenuEntry> prepareMenuItems() {
         List<MenuEntry> menuItems = new ArrayList<>();
-        menuItems.add(new MenuEntry(R.drawable.theme_color,"个性换肤"));
-        menuItems.add(new MenuEntry(R.drawable.about_us,"关于我们"));
-        menuItems.add(new MenuEntry(R.drawable.setting,"设置"));
-        menuItems.add(new MenuEntry(R.drawable.feedback,"意见反馈"));
-        menuItems.add(new MenuEntry(R.drawable.exit_app,"退出"));
+        menuItems.add(new MenuEntry(R.drawable.theme_color, "个性换肤"));
+        menuItems.add(new MenuEntry(R.drawable.about_us, "关于我们"));
+        menuItems.add(new MenuEntry(R.drawable.setting, "设置"));
+        menuItems.add(new MenuEntry(R.drawable.feedback, "意见反馈"));
+        menuItems.add(new MenuEntry(R.drawable.exit_app, "退出"));
         return menuItems;
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        mBmapView.onResume();
+    }
+
+    @Override
+    public void onPause(){
+        super.onPause();
+        mBmapView.onPause();
     }
 
     @OnClick({R.id.fl_title_menu, R.id.login})
@@ -89,13 +104,13 @@ public class MainActivity extends BaseActivity implements OnItemClickListener<Me
     }
 
     @Override
-    public void onClick(MenuEntry entry){
-        switch(entry.mIconResId){
+    public void onClick(MenuEntry entry) {
+        switch (entry.mIconResId) {
             case R.drawable.theme_color:
                 ToastUtils.showShortToast("尚未开发");
                 break;
             case R.drawable.about_us:
-                startActivity(new Intent(this,AboutUsActivity.class));
+                startActivity(new Intent(this, AboutUsActivity.class));
                 break;
             case R.drawable.setting:
                 ToastUtils.showShortToast("尚未开发");
@@ -113,6 +128,7 @@ public class MainActivity extends BaseActivity implements OnItemClickListener<Me
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        mBmapView.onDestroy();
         if (bind != null) {
             bind.unbind();
         }

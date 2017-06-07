@@ -2,6 +2,7 @@ package com.urgenthelper.app;
 
 import android.app.Application;
 
+import com.baidu.mapapi.SDKInitializer;
 import com.blankj.utilcode.utils.Utils;
 
 
@@ -16,5 +17,6 @@ public class MyApp extends Application{
     public void onCreate(){
         super.onCreate();
         Utils.init(this);
+        SDKInitializer.initialize(getApplicationContext());
     }
 }
