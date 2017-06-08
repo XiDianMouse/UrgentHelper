@@ -6,11 +6,16 @@ import android.os.Message;
 
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
+import com.baidu.mapapi.map.BitmapDescriptor;
+import com.baidu.mapapi.map.BitmapDescriptorFactory;
+import com.baidu.mapapi.map.CircleOptions;
 import com.baidu.mapapi.map.MapStatusUpdate;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MyLocationData;
+import com.baidu.mapapi.map.Stroke;
 import com.baidu.mapapi.model.LatLng;
 import com.blankj.utilcode.utils.ToastUtils;
+import com.urgenthelper.R;
 import com.urgenthelper.listeners.OnReceiverListener;
 import com.urgenthelper.tcp.SendTask;
 import com.urgenthelper.tcp.TcpController;
@@ -41,7 +46,8 @@ public class LocationResponse implements BDLocationListener,OnReceiverListener<S
     private TcpController mTcpController;
     public static ConcurrentHashMap<String,FutureTask<Integer>> mNetWorkMap;
     private ThreadPoolExecutor mThreadPoolExector;
-    private boolean isFirstIn;
+    private BitmapDescriptor mBitmapDescriptor;
+    protected int cmdStyle;//0:正常定位 1:紧急报警
 
     public LocationResponse(MainActivity mainActivity){
         mMainActivity = mainActivity;
@@ -55,7 +61,8 @@ public class LocationResponse implements BDLocationListener,OnReceiverListener<S
                 new ArrayBlockingQueue<Runnable>(5),
                 new CustomThreadFactory(),
                 new CustomRejectedExecutionHandler());
-        isFirstIn = true;
+        mBitmapDescriptor = BitmapDescriptorFactory.fromResource(R.drawable.icon_loc);
+        cmdStyle = 0;
     }
 
     private class CustomThreadFactory implements ThreadFactory {
@@ -85,21 +92,33 @@ public class LocationResponse implements BDLocationListener,OnReceiverListener<S
 
         mMainActivity.mBaiduMap.setMyLocationData(data);
 
-//        MyLocationConfiguration config = new MyLocationConfiguration(MyLocationConfiguration.LocationMode.NORMAL,,);
+//        OverlayOptions option = new MarkerOptions().position(new LatLng(location.getLatitude(),location.getLongitude())).icon(mBitmapDescriptor);
+//        mMainActivity.mBaiduMap.addOverlay(option);
 
-        if(isFirstIn){
-            LatLng latLng = new LatLng(location.getLatitude(),location.getLongitude());
-            MapStatusUpdate msu = MapStatusUpdateFactory.newLatLng(latLng);
-            mMainActivity.mBaiduMap.animateMapStatus(msu);
-            isFirstIn = false;
+        mMainActivity.mBaiduMap.clear();
+        //DotOptions 圆点覆盖物
+        LatLng pt = new LatLng(location.getLatitude(), location.getLongitude());
+        CircleOptions circleOptions = new CircleOptions();
+        //circleOptions.center(new LatLng(latitude, longitude));
+        circleOptions.center(pt);                          //设置圆心坐标
+        circleOptions.fillColor(0xAAFFFF00);               //圆填充颜色
+        circleOptions.radius((int)location.getRadius());                         //设置半径
+        circleOptions.stroke(new Stroke(5, 0xAA00FF00));   // 设置边框
+        mMainActivity.mBaiduMap.addOverlay(circleOptions);
+
+        LatLng latLng = new LatLng(location.getLatitude(),location.getLongitude());
+        MapStatusUpdate msu = MapStatusUpdateFactory.newLatLng(latLng);
+        mMainActivity.mBaiduMap.animateMapStatus(msu);
+        switch(cmdStyle){
+            case 1:
+                sendLocData(location);
+                break;
         }
-        //输出信息:sb.toString
-        sendLocData(location);
     }
 
     //将定位结果发送出去
     private void sendLocData(BDLocation location){
-        mMainActivity.mLocationClient.stop();//停止定位
+        cmdStyle = 0;
         String sendData = "15702923681+"+location.getLongitude()+","+location.getLatitude();
         submitTask(sendData);
     }
