@@ -11,7 +11,6 @@ import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.model.LatLng;
 import com.blankj.utilcode.utils.ToastUtils;
-import com.urgenthelper.app.MyApp;
 import com.urgenthelper.listeners.OnReceiverListener;
 import com.urgenthelper.tcp.SendTask;
 import com.urgenthelper.tcp.TcpController;
@@ -84,11 +83,15 @@ public class LocationResponse implements BDLocationListener,OnReceiverListener<S
                 .latitude(location.getLongitude())
                 .build();
 
+        mMainActivity.mBaiduMap.setMyLocationData(data);
+
 //        MyLocationConfiguration config = new MyLocationConfiguration(MyLocationConfiguration.LocationMode.NORMAL,,);
 
         if(isFirstIn){
             LatLng latLng = new LatLng(location.getLatitude(),location.getLongitude());
             MapStatusUpdate msu = MapStatusUpdateFactory.newLatLng(latLng);
+            mMainActivity.mBaiduMap.animateMapStatus(msu);
+            isFirstIn = false;
         }
         //输出信息:sb.toString
         sendLocData(location);
