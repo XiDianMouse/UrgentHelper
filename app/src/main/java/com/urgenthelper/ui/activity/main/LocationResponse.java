@@ -139,7 +139,7 @@ public class LocationResponse implements BDLocationListener,OnReceiverListener<S
 
     //将定位结果发送出去
     private void sendLocData(BDLocation location){
-        mMyApp.mLocationClient.stop();
+        mMyApp.mLocationClient.stop();//停止定位
         String sendData = "15702923681+"+location.getLongitude()+","+location.getLatitude();
         submitTask(sendData);
     }
@@ -200,12 +200,13 @@ public class LocationResponse implements BDLocationListener,OnReceiverListener<S
                 case MSG_NETWORKRESPONSE:
                     Bundle bundle = msg.getData();
                     String data = bundle.getString("receive");
+                    String key = data.substring(2);
                     //已接收成功,将任务取消
-                    FutureTask<Integer> futureTask = mNetWorkMap.get(data);
+                    FutureTask<Integer> futureTask = mNetWorkMap.get(key);
                     if(futureTask!=null && !futureTask.isDone()){
                         futureTask.cancel(true);
                     }
-                    ToastUtils.showShortToast("发送成功:"+data);
+                    ToastUtils.showShortToast("发送成功:"+key);
                     break;
             }
         }

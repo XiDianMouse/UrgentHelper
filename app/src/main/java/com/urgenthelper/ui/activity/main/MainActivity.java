@@ -113,16 +113,18 @@ public class MainActivity extends BaseActivity implements OnItemClickListener<Me
     }
 
     private void alaremHelp(){
+        //确定TCP套接字是否存在且连接是否失效，否则建立套接字。
         TcpController instance = TcpController.getInstance();
         if(instance!=null && instance.mSocket!=null){
-//            try{
-//                instance.mSocket.sendUrgentData(0xFF);//发送心跳包
-//            }catch(Exception e){
-//                new Thread(instance).start();//重新建立套接字
-//            }
+            try{
+                instance.mSocket.sendUrgentData(0xFF);//发送心跳包
+            }catch(Exception e){
+                new Thread(instance).start();//重新建立套接字
+            }
         }else if(instance!=null){
             new Thread(instance).start();//建立套接字
         }
+        //开始定位
         mMyApp.mLocationClient.start();
     }
 

@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.util.Log;
 
 import com.urgenthelper.listeners.OnReceiverListener;
 import com.urgenthelper.ui.activity.main.LocationResponse;
@@ -50,7 +49,9 @@ public class TcpController implements Runnable{
         try {
             mSocket = new Socket("117.34.105.157", 19527);
             mSocket.setKeepAlive(true);
-            mSocket.setSoTimeout(10);
+            // 如果输入流等待设定毫秒还未获得服务端发送数据(即read方法的超时时间)，则提示超时引发SocketTimeoutException，
+            // 此时Socket仍然有效。若设置为0为永不超时。
+            mSocket.setSoTimeout(0);
             mBufferedReader = new BufferedReader(new InputStreamReader(mSocket.getInputStream()));
             mOutputStream = mSocket.getOutputStream();
             startReadThread();
@@ -71,7 +72,6 @@ public class TcpController implements Runnable{
                 //不断读取Socket输入流中的内容
                 try{
                     while((content=mBufferedReader.readLine())!=null){
-                        Log.e("~~~~~~~~~~~~~~~~","执行1"+content);
                         //界面显示数据
                         if(mOnReceiverListener!=null){
                             mOnReceiverListener.onReceive(content,null);
