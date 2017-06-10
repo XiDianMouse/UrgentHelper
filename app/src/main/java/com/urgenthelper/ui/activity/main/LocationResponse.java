@@ -6,16 +6,8 @@ import android.os.Message;
 
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
-import com.baidu.mapapi.map.BitmapDescriptor;
-import com.baidu.mapapi.map.BitmapDescriptorFactory;
-import com.baidu.mapapi.map.CircleOptions;
-import com.baidu.mapapi.map.MapStatusUpdate;
-import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MyLocationData;
-import com.baidu.mapapi.map.Stroke;
-import com.baidu.mapapi.model.LatLng;
 import com.blankj.utilcode.utils.ToastUtils;
-import com.urgenthelper.R;
 import com.urgenthelper.listeners.OnReceiverListener;
 import com.urgenthelper.tcp.SendTask;
 import com.urgenthelper.tcp.TcpController;
@@ -46,7 +38,6 @@ public class LocationResponse implements BDLocationListener,OnReceiverListener<S
     private TcpController mTcpController;
     public static ConcurrentHashMap<String,FutureTask<Integer>> mNetWorkMap;
     private ThreadPoolExecutor mThreadPoolExector;
-    private BitmapDescriptor mBitmapDescriptor;
     protected int cmdStyle;//0:正常定位 1:紧急报警
 
     public LocationResponse(MainActivity mainActivity){
@@ -61,7 +52,6 @@ public class LocationResponse implements BDLocationListener,OnReceiverListener<S
                 new ArrayBlockingQueue<Runnable>(5),
                 new CustomThreadFactory(),
                 new CustomRejectedExecutionHandler());
-        mBitmapDescriptor = BitmapDescriptorFactory.fromResource(R.drawable.icon_loc);
         cmdStyle = 0;
     }
 
@@ -87,28 +77,9 @@ public class LocationResponse implements BDLocationListener,OnReceiverListener<S
         MyLocationData data = new MyLocationData.Builder()
                 .accuracy(location.getRadius())
                 .latitude(location.getLatitude())
-                .latitude(location.getLongitude())
+                .longitude(location.getLongitude())
                 .build();
-
         mMainActivity.mBaiduMap.setMyLocationData(data);
-
-//        OverlayOptions option = new MarkerOptions().position(new LatLng(location.getLatitude(),location.getLongitude())).icon(mBitmapDescriptor);
-//        mMainActivity.mBaiduMap.addOverlay(option);
-
-        mMainActivity.mBaiduMap.clear();
-        //DotOptions 圆点覆盖物
-        LatLng pt = new LatLng(location.getLatitude(), location.getLongitude());
-        CircleOptions circleOptions = new CircleOptions();
-        //circleOptions.center(new LatLng(latitude, longitude));
-        circleOptions.center(pt);                          //设置圆心坐标
-        circleOptions.fillColor(0xAAFFFF00);               //圆填充颜色
-        circleOptions.radius((int)location.getRadius());                         //设置半径
-        circleOptions.stroke(new Stroke(5, 0xAA00FF00));   // 设置边框
-        mMainActivity.mBaiduMap.addOverlay(circleOptions);
-
-        LatLng latLng = new LatLng(location.getLatitude(),location.getLongitude());
-        MapStatusUpdate msu = MapStatusUpdateFactory.newLatLng(latLng);
-        mMainActivity.mBaiduMap.animateMapStatus(msu);
         switch(cmdStyle){
             case 1:
                 sendLocData(location);

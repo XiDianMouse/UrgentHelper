@@ -13,9 +13,13 @@ import android.view.View;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 import com.baidu.mapapi.map.BaiduMap;
+import com.baidu.mapapi.map.BitmapDescriptor;
+import com.baidu.mapapi.map.BitmapDescriptorFactory;
+import com.baidu.mapapi.map.MapStatus;
 import com.baidu.mapapi.map.MapStatusUpdate;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
+import com.baidu.mapapi.map.MyLocationConfiguration;
 import com.blankj.utilcode.utils.ToastUtils;
 import com.urgenthelper.ItemEntry.MenuEntry;
 import com.urgenthelper.R;
@@ -55,9 +59,16 @@ public class MainActivity extends BaseActivity implements OnItemClickListener<Me
     MapView mBmapView;
     protected BaiduMap mBaiduMap;
 
-    //百度地图定位
+    /****************************百度定位*****************************************
+     * 目前系统自带的网络定位服务精度低，且服务不稳定、精度低，并且从未来的趋势看，基站定位是不可控的
+     * （移动公司随时可能更改基站编号以垄断定位服务），而Wi-Fi定位则不然，它是一种精度更高、不受管制的定位方法。
+     * 国内其它使用Wi-Fi定位的地图软件，Wi-Fi定位基本不可用，百度的定位服务量化指标优秀，网络接口返回速度快
+     * （服务端每次定位响应时间50毫秒以内），平均精度70米，其中Wi-Fi精度40米左右，基站定位精度200米左右，
+     * 覆盖率98%，在国内处于一枝独秀的地位。
+     */
     protected LocationClient mLocationClient;
     private LocationResponse mLocationResponse;
+    private BitmapDescriptor mBitmapDescriptor;
 
     @Override
     public int getLayoutId() {
@@ -74,12 +85,7 @@ public class MainActivity extends BaseActivity implements OnItemClickListener<Me
         actionBar.setDisplayShowTitleEnabled(false);
         initMenuView();
         initMapView();
-
-        //百度定位
-        mLocationResponse = new LocationResponse(this);
-        mLocationClient = new LocationClient(getApplicationContext());//声明LocationClient类
-        mLocationClient.registerLocationListener(mLocationResponse);    //注册监听函数
-        initLocation();
+        initLocation();//定位
     }
 
     private void initMenuView() {
@@ -90,11 +96,28 @@ public class MainActivity extends BaseActivity implements OnItemClickListener<Me
         mMenuRecyclerview.setAdapter(menuAdapter);
     }
 
+    /*
+    *   ①LatLng类只有两个属性 用来描述地理坐标基本数据结构(纬度,经度)
+        ②MapStatus.Builder是地图状态构造器 target设置地图中心点 zoom设置地图缩放级别
+            build()方法生成一个MapStatus地图状态对象
+        ③MapStatusUpdateFactory,生成地图状态将要发生的变化描述 newMapStatus()方法设置地图新状态
+            MapStatus就是地图状态对象  MapStatusUpdate对象是生成的地图变化描述
+        ④BaiduMap对象用setMapStatus()方法改变地图状态(参数的含义是根据描述去改变)
+
+        其实听起来有些难理解  通过面向对象的思维 我这样理解 :
+            地图要改变-->地图操作者去改变-->按照客户要求(可能有新的中心点,缩放度)生成一个地图状态
+                -->地图操作者看不懂状态需要人描述一下状态的含义-->地图操作者根据描述去开始操作地图
+        对应的类的关系 :
+        MapView要改变-->用BaiduMap去操作-->根据MapStatus的状态改变-->
+            BaiduMap看不懂状态MapStatus  需要MapStatusUpdate去描述-->BaiduMap通过描述去改变-->
+            MapView改变
+    * */
     private void initMapView(){
+        //通过BaiduMap对象设置地图的一些属性
         mBaiduMap = mBmapView.getMap();
-        //设置地图标尺
-        MapStatusUpdate msu = MapStatusUpdateFactory.zoomTo(15.0f);//标尺为500m
-        mBaiduMap.setMapStatus(msu);
+        MapStatus mapStatus = new MapStatus.Builder().zoom(18).build();
+        MapStatusUpdate mapStatusUpdate = MapStatusUpdateFactory.newMapStatus(mapStatus);
+        mBaiduMap.setMapStatus(mapStatusUpdate);
     }
 
     private List<MenuEntry> prepareMenuItems() {
@@ -110,6 +133,7 @@ public class MainActivity extends BaseActivity implements OnItemClickListener<Me
     //综合定位功能指的是根据用户实际需求，返回用户当前位置的基础定位服务,包含GPS和网络定位(WiFi定位和基站
     //定位)功能。基本定位功能同时还支持位置描述信息功能，离线定位功能，位置提醒功能和位置语义化功能。
     private void initLocation(){
+        mLocationClient = new LocationClient(getApplicationContext());//声明LocationClient类
         LocationClientOption option = new LocationClientOption();
         /*
         * 高精度定位模式：这种定位模式下，会同时使用网络定位和GPS定位，优先返回最高精度的定位结果；
@@ -122,25 +146,23 @@ public class MainActivity extends BaseActivity implements OnItemClickListener<Me
         option.setScanSpan(span);//可选，默认0，即仅定位一次，设置发起定位请求的间隔需要大于等于1000ms才是有效的
         option.setIsNeedAddress(true);//可选，设置是否需要地址信息，默认不需要
         option.setOpenGps(true);//可选，默认false,设置是否使用gps
-        option.setLocationNotify(true);//可选，默认false，设置是否当gps有效时按照1S1次频率输出GPS结果
-        option.setIsNeedLocationDescribe(true);//可选，默认false，设置是否需要位置语义化结果，可以在BDLocation.getLocationDescribe里得到，结果类似于“在北京天安门附近”
-        option.setIsNeedLocationPoiList(true);//可选，默认false，设置是否需要POI结果，可以在BDLocation.getPoiList里得到
-        option.setIgnoreKillProcess(false);//可选，默认true，定位SDK内部是一个SERVICE，并放到了独立进程，设置是否在stop的时候杀死这个进程，默认不杀死
-        option.SetIgnoreCacheException(false);//可选，默认false，设置是否收集CRASH信息，默认收集
-        option.setEnableSimulateGps(false);//可选，默认false，设置是否需要过滤gps仿真结果，默认需要
+        option.setIsNeedAddress(true);// 返回的定位结果包含地址信息
+        option.setNeedDeviceDirect(true);// 返回的定位结果包含手机机头的方向
         mLocationClient.setLocOption(option);
-
-        mLocationClient.setLocOption(option);
+        mLocationResponse = new LocationResponse(this);
+        mLocationClient.registerLocationListener(mLocationResponse);    //注册监听函数
+        mBitmapDescriptor = BitmapDescriptorFactory.fromResource(R.mipmap.icon);
+        MyLocationConfiguration configuration = new MyLocationConfiguration(
+                MyLocationConfiguration.LocationMode.FOLLOWING,true,mBitmapDescriptor);
+        mBaiduMap.setMyLocationConfiguration(configuration);
+        mBaiduMap.setMyLocationEnabled(true);
     }
 
     @Override
     protected void onStart(){
         super.onStart();
         //开始定位
-        mBaiduMap.setMyLocationEnabled(true);
-        if(!mLocationClient.isStarted()){
-            mLocationClient.start();
-        }
+        mLocationClient.start();
     }
 
     @Override
