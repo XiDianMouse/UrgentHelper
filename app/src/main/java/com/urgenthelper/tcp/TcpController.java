@@ -5,8 +5,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 
+import com.urgenthelper.listeners.MyLocationListener;
 import com.urgenthelper.listeners.OnReceiverListener;
-import com.urgenthelper.ui.activity.main.LocationResponse;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -29,13 +29,13 @@ public class TcpController implements Runnable{
     private OutputStream mOutputStream;
     private static TcpController instance;
 
-    private TcpController(LocationResponse locationResponse){
-        mOnReceiverListener = locationResponse;
+    private TcpController(MyLocationListener mMyLocationListener){
+        mOnReceiverListener = mMyLocationListener;
     }
 
-    public static TcpController getInstance(LocationResponse locationResponse){
+    public static TcpController getInstance(MyLocationListener mMyLocationListener){
         if(instance==null){
-            instance = new TcpController(locationResponse);
+            instance = new TcpController(mMyLocationListener);
         }
         return instance;
     }

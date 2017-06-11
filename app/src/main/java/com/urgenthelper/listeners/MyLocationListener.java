@@ -1,4 +1,4 @@
-package com.urgenthelper.ui.activity.main;
+package com.urgenthelper.listeners;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -8,9 +8,9 @@ import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
 import com.baidu.mapapi.map.MyLocationData;
 import com.blankj.utilcode.utils.ToastUtils;
-import com.urgenthelper.listeners.OnReceiverListener;
 import com.urgenthelper.tcp.SendTask;
 import com.urgenthelper.tcp.TcpController;
+import com.urgenthelper.ui.activity.main.MainActivity;
 
 import java.lang.ref.WeakReference;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 
 //BDLocationListener为结果监听接口，异步获取定位结果
-public class LocationResponse implements BDLocationListener,OnReceiverListener<String>{
+public class MyLocationListener implements BDLocationListener,OnReceiverListener<String>{
     public static final int MSG_UNRESPONSE = 0x01;
     public static final int MSG_NETWORKRESPONSE = 0x02;
     public static MsgHandler mMsgHandler;
@@ -38,9 +38,9 @@ public class LocationResponse implements BDLocationListener,OnReceiverListener<S
     private TcpController mTcpController;
     public static ConcurrentHashMap<String,FutureTask<Integer>> mNetWorkMap;
     private ThreadPoolExecutor mThreadPoolExector;
-    protected int cmdStyle;//0:正常定位 1:紧急报警
+    public int cmdStyle;//0:正常定位 1:紧急报警
 
-    public LocationResponse(MainActivity mainActivity){
+    public MyLocationListener(MainActivity mainActivity){
         mMainActivity = mainActivity;
         mMsgHandler = new MsgHandler(this);
         mTcpController = TcpController.getInstance(this);
@@ -141,15 +141,15 @@ public class LocationResponse implements BDLocationListener,OnReceiverListener<S
 
     //创建静态内部类，防止内存泄漏
     public static class MsgHandler extends Handler {
-        private WeakReference<LocationResponse> mRef;
+        private WeakReference<MyLocationListener> mRef;
 
-        public MsgHandler(LocationResponse locationResponse) {
-            this.mRef = new WeakReference<>(locationResponse);
+        public MsgHandler(MyLocationListener mMyLocationListener) {
+            this.mRef = new WeakReference<>(mMyLocationListener);
         }
 
         public void handleMessage(Message msg) {//此方法在ui线程运行
-            LocationResponse locationResponse = this.mRef.get();
-            if (locationResponse ==null) {
+            MyLocationListener mMyLocationListener = this.mRef.get();
+            if (mMyLocationListener ==null) {
                 return;
             }
             switch (msg.what) {

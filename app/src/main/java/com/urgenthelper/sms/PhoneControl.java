@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.telephony.SmsManager;
 
+import com.urgenthelper.broadcastreceivers.SmsReceiver;
 import com.urgenthelper.ui.activity.main.MainActivity;
 
 import java.util.ArrayList;
@@ -31,7 +32,7 @@ public class PhoneControl {
         mSmsSendPI = PendingIntent.getBroadcast(mainActivity,0,new Intent(Content.SEND_SMS_ACTION),0);
         mSmsDeliverPI = PendingIntent.getBroadcast(mainActivity,0,new Intent(Content.DELIVERED_SMS_ACTION),0);
         mBroadcastReceiver = new SmsReceiver();
-        mainActivity.registerReceiver(new SmsReceiver(),myIntentFilter());
+        mainActivity.registerReceiver(mBroadcastReceiver,myIntentFilter());
     }
 
     private IntentFilter myIntentFilter(){

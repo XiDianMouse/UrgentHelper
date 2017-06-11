@@ -1,6 +1,7 @@
 package com.urgenthelper.ui.activity.main;
 
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -24,6 +25,8 @@ import com.blankj.utilcode.utils.ToastUtils;
 import com.urgenthelper.ItemEntry.MenuEntry;
 import com.urgenthelper.R;
 import com.urgenthelper.adapter.MenuAdapter;
+import com.urgenthelper.broadcastreceivers.NetReceiver;
+import com.urgenthelper.listeners.MyLocationListener;
 import com.urgenthelper.listeners.OnItemClickListener;
 import com.urgenthelper.sms.PhoneControl;
 import com.urgenthelper.tcp.TcpController;
@@ -58,9 +61,9 @@ public class MainActivity extends BaseActivity implements OnItemClickListener<Me
     //百度地图
     @BindView(R.id.bmapView)
     MapView mBmapView;
-    protected BaiduMap mBaiduMap;
+    public BaiduMap mBaiduMap;
 
-    protected PhoneControl mPhoneControl;
+    public PhoneControl mPhoneControl;
 
     /****************************百度定位*****************************************
      * 目前系统自带的网络定位服务精度低，且服务不稳定、精度低，并且从未来的趋势看，基站定位是不可控的
@@ -70,8 +73,10 @@ public class MainActivity extends BaseActivity implements OnItemClickListener<Me
      * 覆盖率98%，在国内处于一枝独秀的地位。
      */
     protected LocationClient mLocationClient;
-    private LocationResponse mLocationResponse;
+    private MyLocationListener mMyLocationListener;
     private BitmapDescriptor mBitmapDescriptor;
+
+    private NetReceiver mNetReceiver;
 
     @Override
     public int getLayoutId() {
@@ -98,6 +103,9 @@ public class MainActivity extends BaseActivity implements OnItemClickListener<Me
         menuAdapter.addItems(prepareMenuItems());
         menuAdapter.setItemClickListener(this);
         mMenuRecyclerview.setAdapter(menuAdapter);
+
+        mNetReceiver = new NetReceiver();
+        registerReceiver(mNetReceiver,myIntentFilter());
     }
 
     /*
@@ -153,12 +161,21 @@ public class MainActivity extends BaseActivity implements OnItemClickListener<Me
         option.setIsNeedAddress(true);// 返回的定位结果包含地址信息
         option.setNeedDeviceDirect(true);// 返回的定位结果包含手机机头的方向
         mLocationClient.setLocOption(option);
-        mLocationResponse = new LocationResponse(this);
-        mLocationClient.registerLocationListener(mLocationResponse);    //注册监听函数
+        mMyLocationListener = new MyLocationListener(this);
+        mLocationClient.registerLocationListener(mMyLocationListener);    //注册监听函数
         mBitmapDescriptor = BitmapDescriptorFactory.fromResource(R.mipmap.icon);
         MyLocationConfiguration configuration = new MyLocationConfiguration(
                 MyLocationConfiguration.LocationMode.FOLLOWING,true,mBitmapDescriptor);
         mBaiduMap.setMyLocationConfiguration(configuration);
+    }
+
+    private IntentFilter myIntentFilter(){
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
+        intentFilter.addAction("android.net.wifi.WIFI_STATE_CHANGED");
+        intentFilter.addAction("android.net.wifi.STATE_CHANGE");
+
+        return intentFilter;
     }
 
     @Override
@@ -232,7 +249,7 @@ public class MainActivity extends BaseActivity implements OnItemClickListener<Me
             new Thread(instance).start();//建立套接字
         }
         //开始紧急报警定位
-        mLocationResponse.cmdStyle = 1;
+        mMyLocationListener.cmdStyle = 1;
     }
 
     @Override

@@ -2,7 +2,7 @@ package com.urgenthelper.tcp;
 
 import android.os.Message;
 
-import com.urgenthelper.ui.activity.main.LocationResponse;
+import com.urgenthelper.listeners.MyLocationListener;
 
 import java.util.concurrent.Callable;
 
@@ -15,17 +15,17 @@ import java.util.concurrent.Callable;
 public class SendTask implements Callable<Integer> {
     private int maxRunTimes;//最大等待次数,每次等待10ms
     private String cmd;
-    private LocationResponse mLocationResponse;
+    private MyLocationListener mMyLocationListener;
 
-    public SendTask(LocationResponse locationResponse, String str){
-        mLocationResponse = locationResponse;
+    public SendTask(MyLocationListener mMyLocationListener, String str){
+        this.mMyLocationListener = mMyLocationListener;
         maxRunTimes = 50;
         cmd = str;
     }
 
     @Override
     public Integer call() throws Exception{
-        mLocationResponse.sendData(cmd);
+        mMyLocationListener.sendData(cmd);
         //是否能接收到反馈数据
         while(maxRunTimes>0){//50*10ms
             try{
@@ -58,8 +58,8 @@ public class SendTask implements Callable<Integer> {
             maxRunTimes--;
         }
         if(maxRunTimes==0){//未收到反馈数据
-            if(LocationResponse.mMsgHandler!=null){
-                Message msg= LocationResponse.mMsgHandler.obtainMessage(LocationResponse.MSG_UNRESPONSE);
+            if(MyLocationListener.mMsgHandler!=null){
+                Message msg= MyLocationListener.mMsgHandler.obtainMessage(MyLocationListener.MSG_UNRESPONSE);
                 msg.sendToTarget();
             }
         }
