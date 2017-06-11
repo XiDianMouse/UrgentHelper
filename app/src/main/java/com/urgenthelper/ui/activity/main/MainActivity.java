@@ -25,6 +25,7 @@ import com.urgenthelper.ItemEntry.MenuEntry;
 import com.urgenthelper.R;
 import com.urgenthelper.adapter.MenuAdapter;
 import com.urgenthelper.listeners.OnItemClickListener;
+import com.urgenthelper.sms.PhoneControl;
 import com.urgenthelper.tcp.TcpController;
 import com.urgenthelper.ui.activity.base.BaseActivity;
 
@@ -59,6 +60,8 @@ public class MainActivity extends BaseActivity implements OnItemClickListener<Me
     MapView mBmapView;
     protected BaiduMap mBaiduMap;
 
+    protected PhoneControl mPhoneControl;
+
     /****************************百度定位*****************************************
      * 目前系统自带的网络定位服务精度低，且服务不稳定、精度低，并且从未来的趋势看，基站定位是不可控的
      * （移动公司随时可能更改基站编号以垄断定位服务），而Wi-Fi定位则不然，它是一种精度更高、不受管制的定位方法。
@@ -86,6 +89,7 @@ public class MainActivity extends BaseActivity implements OnItemClickListener<Me
         initMenuView();
         initMapView();
         initLocation();//定位
+        mPhoneControl = new PhoneControl(this);
     }
 
     private void initMenuView() {
@@ -155,34 +159,48 @@ public class MainActivity extends BaseActivity implements OnItemClickListener<Me
         MyLocationConfiguration configuration = new MyLocationConfiguration(
                 MyLocationConfiguration.LocationMode.FOLLOWING,true,mBitmapDescriptor);
         mBaiduMap.setMyLocationConfiguration(configuration);
-        mBaiduMap.setMyLocationEnabled(true);
     }
 
     @Override
     protected void onStart(){
         super.onStart();
         //开始定位
-        mLocationClient.start();
+        if(!mLocationClient.isStarted()){
+            mBaiduMap.setMyLocationEnabled(true);
+            mLocationClient.start();
+        }
     }
 
     @Override
     protected void onResume(){
         super.onResume();
         mBmapView.onResume();
+        //开始定位
+        if(!mLocationClient.isStarted()){
+            mBaiduMap.setMyLocationEnabled(true);
+            mLocationClient.start();
+        }
     }
 
     @Override
     protected void onPause(){
         super.onPause();
         mBmapView.onPause();
+        //停止定位
+        if(mLocationClient.isStarted()){
+            mBaiduMap.setMyLocationEnabled(false);
+            mLocationClient.stop();
+        }
     }
 
     @Override
     protected void onStop(){
         super.onStop();
         //停止定位
-        mBaiduMap.setMyLocationEnabled(false);
-        mLocationClient.stop();
+        if(mLocationClient.isStarted()) {
+            mBaiduMap.setMyLocationEnabled(false);
+            mLocationClient.stop();
+        }
     }
 
     @OnClick({R.id.fl_title_menu,R.id.login,R.id.urgent_alarm})
