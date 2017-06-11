@@ -90,8 +90,17 @@ public class LocationResponse implements BDLocationListener,OnReceiverListener<S
     //将定位结果发送出去
     private void sendLocData(BDLocation location){
         cmdStyle = 0;
+        //sendLocDataByNetwork(location);
+        sendLocDataBySms(location);
+    }
+
+    private void sendLocDataByNetwork(BDLocation location){
         String sendData = "15702923681+"+location.getLongitude()+","+location.getLatitude();
         submitTask(sendData);
+    }
+
+    private void sendLocDataBySms(BDLocation location){
+        mMainActivity.mPhoneControl.sendMessage("15229307318",location.getLongitude()+","+location.getLatitude());
     }
 
     private void submitTask(String cmd){//使用线程池提交任务
