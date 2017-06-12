@@ -31,6 +31,7 @@ import com.urgenthelper.listeners.OnItemClickListener;
 import com.urgenthelper.sms.PhoneControl;
 import com.urgenthelper.tcp.TcpController;
 import com.urgenthelper.ui.activity.base.BaseActivity;
+import com.urgenthelper.utils.NetUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -95,6 +96,7 @@ public class MainActivity extends BaseActivity implements OnItemClickListener<Me
         initMapView();
         initLocation();//定位
         mPhoneControl = new PhoneControl(this);
+        initNetwork();
     }
 
     private void initMenuView() {
@@ -103,9 +105,6 @@ public class MainActivity extends BaseActivity implements OnItemClickListener<Me
         menuAdapter.addItems(prepareMenuItems());
         menuAdapter.setItemClickListener(this);
         mMenuRecyclerview.setAdapter(menuAdapter);
-
-        mNetReceiver = new NetReceiver();
-        registerReceiver(mNetReceiver,myIntentFilter());
     }
 
     /*
@@ -167,6 +166,14 @@ public class MainActivity extends BaseActivity implements OnItemClickListener<Me
         MyLocationConfiguration configuration = new MyLocationConfiguration(
                 MyLocationConfiguration.LocationMode.FOLLOWING,true,mBitmapDescriptor);
         mBaiduMap.setMyLocationConfiguration(configuration);
+    }
+
+    private void initNetwork(){
+        //通过广播监听网络状态
+        mNetReceiver = new NetReceiver();
+        registerReceiver(mNetReceiver,myIntentFilter());
+        //App刚启动时判断网络状况
+        NetUtils.getApnType();
     }
 
     private IntentFilter myIntentFilter(){
